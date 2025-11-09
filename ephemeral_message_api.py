@@ -78,12 +78,16 @@ def home():
                     margin: 10px 0;
                     font-size: 1rem;
                 }
+                select, button {
+                    margin-top: 8px;
+                    font-size: 1rem;
+                    padding: 8px 12px;
+                    border-radius: 8px;
+                }
                 button {
                     background-color: #2563eb;
                     color: white;
                     border: none;
-                    padding: 10px 20px;
-                    border-radius: 8px;
                     cursor: pointer;
                 }
                 button:hover {
@@ -97,7 +101,16 @@ def home():
         </head>
         <body>
             <h1>🔐 Ephemeral Message</h1>
+
             <textarea id="msg" placeholder="Type your message here..."></textarea><br/>
+
+            <label for="ttl">Keep message alive for:</label>
+            <select id="ttl">
+                <option value="60">1 minute</option>
+                <option value="120">2 minutes</option>
+                <option value="300">5 minutes</option>
+            </select><br/>
+
             <button onclick="sendMessage()">Send</button>
 
             <div id="output"></div>
@@ -105,22 +118,25 @@ def home():
             <script>
                 async function sendMessage() {
                     const msg = document.getElementById("msg").value;
+                    const ttl = parseInt(document.getElementById("ttl").value);
                     const res = await fetch('/send', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ text: msg })
+                        body: JSON.stringify({ text: msg, ttl: ttl })
                     });
                     const data = await res.json();
                     document.getElementById("output").innerHTML = 
-                        '<p>✅ Message stored for 1 minute.</p>' +
+                        '<p> Message stored for ' + (ttl/60) + ' minute(s).</p>' +
                         '<p>Share this link:</p>' +
-                        '<a href="' + data.link + '" target="_blank">' + window.location.origin + data.link + '</a>';
+                        '<a href="' + data.link + '/view" target="_blank">' +
+                        window.location.origin + data.link + '/view</a>';
                     document.getElementById("msg").value = '';
                 }
             </script>
         </body>
     </html>
     """
+
 
 @app.get("/recv/{msg_id}/view", response_class=HTMLResponse)
 def view_message(msg_id: str):
