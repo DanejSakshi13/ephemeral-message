@@ -171,10 +171,19 @@ def home():
 
 @app.get("/recv/{msg_id}/view", response_class=HTMLResponse)
 def view_message(msg_id: str):
+    ttl_seconds = 0
+    entry = store.get(msg_id)
+    if entry:
+        # Calculate remaining time for countdown
+        ttl_seconds = int(entry["expires"] - time.time())
+        if ttl_seconds < 0:
+            ttl_seconds = 0
+
     return f"""
     <html>
         <head>
             <title>View Message</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1">
             <style>
                 body {{
                     font-family: system-ui;
@@ -184,6 +193,9 @@ def view_message(msg_id: str):
                     align-items: center;
                     justify-content: center;
                     height: 100vh;
+                    overflow: hidden;
+                    user-select: none;
+                    -webkit-user-select: none;
                 }}
                 #msg {{
                     background: white;
@@ -192,21 +204,91 @@ def view_message(msg_id: str):
                     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
                     width: 300px;
                     text-align: center;
+                    position: relative;
+                }}
+                #timer {{
+                    margin-top: 10px;
+                    color: #ef4444;
+                    font-weight: bold;
+                }}
+                #overlay {{
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0,0,0,0);
+                    z-index: 9999;
+                    display: none;
                 }}
             </style>
         </head>
         <body>
-            <div id="msg">Loading...</div>
+            <div id="msg">Loading message...</div>
+            <div id="timer"></div>
+            <div id="overlay"></div>
+            
             <script>
                 async function fetchMsg() {{
-                    const res = await fetch('/recv/{msg_id}');
-                    const data = await res.json();
-                    document.getElementById("msg").innerText = data.text;
+                    try {{
+                        const res = await fetch('/recv/{msg_id}');
+                        if (!res.ok) {{
+                            document.getElementById("msg").innerText = "⚠️ Message not found or expired.";
+                            return;
+                        }}
+                        const data = await res.json();
+                        document.getElementById("msg").innerText = data.text;
+                        startCountdown({ttl_seconds});
+                    }} catch (err) {{
+                        document.getElementById("msg").innerText = "Error loading message.";
+                    }}
                 }}
+
+                function startCountdown(seconds) {{
+                    let remaining = seconds;
+                    const timer = document.getElementById("timer");
+                    const interval = setInterval(() => {{
+                        if (remaining <= 0) {{
+                            clearInterval(interval);
+                            timer.innerText = "⏳ Message expired. Refreshing...";
+                            setTimeout(() => location.reload(), 1500);
+                            return;
+                        }}
+                        const mins = Math.floor(remaining / 60);
+                        const secs = remaining % 60;
+                        timer.innerText = `⏰ Disappearing in: ${{mins}}m ${{secs}}s`;
+                        remaining--;
+                    }}, 1000);
+                }}
+
+                // Screenshot prevention (limited, client-side)
+                document.addEventListener("keydown", function(e) {{
+                    if (e.key === "PrintScreen") {{
+                        navigator.clipboard.writeText("Screenshots are disabled for this message.");
+                        alert(" Screenshots disabled for this message.");
+                        e.preventDefault();
+                    }}
+                    if ((e.ctrlKey || e.metaKey) && (e.key === "s" || e.key === "p")) {{
+                        e.preventDefault();
+                        alert(" Saving/Printing disabled.");
+                    }}
+                }});
+
+                document.addEventListener("visibilitychange", function() {{
+                    if (document.hidden) {{
+                        alert(" Please do not switch tabs while viewing this message.");
+                        location.reload();
+                    }}
+                }});
+
+                // Attempt to block context menu (right-click)
+                document.addEventListener("contextmenu", e => e.preventDefault());
+
                 fetchMsg();
             </script>
         </body>
     </html>
     """
+
 
 
