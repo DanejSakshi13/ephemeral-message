@@ -143,24 +143,25 @@ def home():
             <p> Message stored for <strong>${ttl / 60}</strong> minute(s).</p>
             <p>Share this link:</p>
             <a id="msgLink" href="${data.link}/view" target="_blank">${fullLink}</a><br/>
-            <button id="copyBtn" onclick="copyLink()">📋 Copy Link</button>
+            <button id="copyBtn" onclick="copyLink()">Copy Link</button>
             <p id="copyStatus" style="color: gray; font-size: 0.9rem; margin-top: 4px;"></p>
         `;
         document.getElementById("msg").value = '';
     }
 
     async function copyLink() {
-        const link = document.getElementById("msgLink").href;
-        try {
-            await navigator.clipboard.writeText(window.location.origin + link);
-            document.getElementById("copyStatus").innerText = " Link copied to clipboard!";
-            setTimeout(() => {
-                document.getElementById("copyStatus").innerText = "";
-            }, 2000);
-        } catch (err) {
-            document.getElementById("copyStatus").innerText = "Failed to copy link.";
-        }
+    const link = document.getElementById("msgLink").href;
+    try {
+        await navigator.clipboard.writeText(link);  
+        document.getElementById("copyStatus").innerText = " Link copied to clipboard!";
+        setTimeout(() => {
+            document.getElementById("copyStatus").innerText = "";
+        }, 2000);
+    } catch (err) {
+        document.getElementById("copyStatus").innerText = " Failed to copy link.";
     }
+}
+
 </script>
 
         </body>
