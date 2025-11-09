@@ -123,42 +123,46 @@ def home():
 
             <div id="output"></div>
 
-            <script>
-                async function sendMessage() {
-                    const msg = document.getElementById("msg").value.trim();
-                    if (!msg) {
-                        alert("Please enter a message!");
-                        return;
-                    }
+          <script>
+    async function sendMessage() {
+        const msg = document.getElementById("msg").value.trim();
+        if (!msg) {
+            alert("Please enter a message!");
+            return;
+        }
 
-                    const ttl = parseInt(document.getElementById("ttl").value);
-                    const res = await fetch('/send', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ text: msg, ttl: ttl })
-                    });
-                    const data = await res.json();
-                    const fullLink = window.location.origin + data.link + '/view';
-                    document.getElementById("output").innerHTML = `
-                        <p> Message stored for <strong>${ttl / 60}</strong> minute(s).</p>
-                        <p>Share this link:</p>
-                        <a id="msgLink" href="${data.link}/view" target="_blank">${fullLink}</a><br/>
-                        <button id="copyBtn" onclick="copyLink()">📋 Copy Link</button>
-                        <p id="copyStatus" style="color: gray; font-size: 0.9rem; margin-top: 4px;"></p>
-                    `;
-                    document.getElementById("msg").value = '';
-                }
+        const ttl = parseInt(document.getElementById("ttl").value);
+        const res = await fetch('/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: msg, ttl: ttl })
+        });
+        const data = await res.json();
+        const fullLink = window.location.origin + data.link + '/view';
+        document.getElementById("output").innerHTML = `
+            <p> Message stored for <strong>${ttl / 60}</strong> minute(s).</p>
+            <p>Share this link:</p>
+            <a id="msgLink" href="${data.link}/view" target="_blank">${fullLink}</a><br/>
+            <button id="copyBtn" onclick="copyLink()">📋 Copy Link</button>
+            <p id="copyStatus" style="color: gray; font-size: 0.9rem; margin-top: 4px;"></p>
+        `;
+        document.getElementById("msg").value = '';
+    }
 
-                async function copyLink() {
-                    const link = document.getElementById("msgLink").href;
-                    try {
-                        await navigator.clipboard.writeText(window.location.origin + link);
-                        document.getElementById("copyStatus").innerText = " Link copied to clipboard!";
-                    } catch (err) 
-                        document.getElementById("copyStatus").innerText = " Failed to copy link.";
-                    }
-                }
-            </script>
+    async function copyLink() {
+        const link = document.getElementById("msgLink").href;
+        try {
+            await navigator.clipboard.writeText(window.location.origin + link);
+            document.getElementById("copyStatus").innerText = " Link copied to clipboard!";
+            setTimeout(() => {
+                document.getElementById("copyStatus").innerText = "";
+            }, 2000);
+        } catch (err) {
+            document.getElementById("copyStatus").innerText = "Failed to copy link.";
+        }
+    }
+</script>
+
         </body>
     </html>
     """
