@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Ephemeral Message Relay</title>
+    <link rel="stylesheet" href="/static/style.css" />
+</head>
+
+<body>
+    <h1>🔐 Ephemeral Message</h1>
+
+    <textarea id="msg" placeholder="Type your msg here..."></textarea><br />
+
+    <label for="ttl">Keep message alive for:</label>
+    <select id="ttl">
+        <option value="60">1 minute</option>
+        <option value="120">2 minutes</option>
+        <option value="300">5 minutes</option>
+    </select><br />
+
+    <button onclick="sendMessage()">Send</button>
+
+    <div id="output"></div>
+
+    <script>
+        async function sendMessage() {
+            const msg = document.getElementById("msg").value.trim();
+            if (!msg) return alert("Please enter a message!");
+
+            const ttl = parseInt(document.getElementById("ttl").value);
+            const res = await fetch("/send", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text: msg, ttl: ttl })
+            });
+
+            const data = await res.json();
+            const link = window.location.origin + data.link;
+            document.getElementById("output").innerHTML = `
+          <p>Message stored for <strong>${ttl / 60}</strong> min(s).</p>
+          <p><a id="msgLink" href="${data.link}" target="_blank">${link}</a></p>
+          <button id="copyBtn" onclick="copyLink()">📋 Copy Link</button>
+          <p id="copyStatus" style="color: gray; font-size: 0.9rem; margin-top: 4px;"></p>
+        `;
+            document.getElementById("msg").value = "";
+        }
+
+        async function copyLink() {
+            const link = document.getElementById("msgLink").href;
+            try {
+                await navigator.clipboard.writeText(link);
+                document.getElementById("copyStatus").innerText = " Link copied!";
+                setTimeout(() => {
+                    document.getElementById("copyStatus").innerText = "";
+                }, 2000);
+            } catch {
+                document.getElementById("copyStatus").innerText = " Failed to copy.";
+            }
+        }
+    </script>
+</body>
+
+</html>

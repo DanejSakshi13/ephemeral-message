@@ -1,0 +1,75 @@
+body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: #f8fafc;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    color: #111827;
+}
+
+h1 {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+}
+
+textarea {
+    width: 320px;
+    height: 100px;
+    margin: 10px 0;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 1rem;
+    outline: none;
+    transition: 0.2s;
+}
+
+textarea:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+select,
+button {
+    margin-top: 8px;
+    font-size: 1rem;
+    padding: 8px 14px;
+    border-radius: 8px;
+}
+
+button {
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+button:hover {
+    background-color: #1d4ed8;
+}
+
+#copyBtn {
+    background-color: #10b981;
+    margin-top: 8px;
+}
+
+#copyBtn:hover {
+    background-color: #059669;
+}
+
+#msg,
+#output {
+    text-align: center;
+    word-wrap: break-word;
+    max-width: 90%;
+}
+
+#timer {
+    margin-top: 10px;
+    font-weight: bold;
+    color: #ef4444;
+}

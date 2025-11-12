@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>View Message</title>
+    <link rel="stylesheet" href="/static/style.css" />
+</head>
+
+<body>
+    <div id="msg">Loading message...</div>
+    <div id="timer"></div>
+
+    <script>
+        const ttl = {{ ttl }};
+        const msgId = "{{ msg_id }}";
+
+        async function fetchMsg() {
+            const res = await fetch(`/recv/${msgId}`);
+            if (!res.ok) {
+                document.getElementById("msg").innerText = "⚠️ Message expired or missing.";
+                return;
+            }
+            const data = await res.json();
+            document.getElementById("msg").innerText = data.text;
+            startCountdown(ttl);
+        }
+
+        function startCountdown(sec) {
+            let s = sec;
+            const timer = document.getElementById("timer");
+            const i = setInterval(() => {
+                if (s <= 0) {
+                    clearInterval(i);
+                    timer.innerText = "Message expired. Reloading...";
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    const m = Math.floor(s / 60);
+                    const r = s % 60;
+                    timer.innerText = `⏰ Disappearing in: ${m}m ${r}s`;
+                    s--;
+                }
+            }, 1000);
+        }
+
+        document.addEventListener("visibilitychange", () => {
+            if (document.hidden) location.reload();
+        });
+
+        document.addEventListener("contextmenu", e => e.preventDefault());
+
+        fetchMsg();
+    </script>
+</body>
+
+</html>
